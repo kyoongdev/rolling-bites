@@ -60,19 +60,15 @@ jacoco {
 }
 
 def jacocoExcludePatterns = [
-        // 측정 안하고 싶은 패턴
-        "**/*Application*",
-        "**/*Config*",
-        "**/*Exception*",
-        "**/*Request*",
-        "**/*Response*",
-        "**/*Dto*",
-        "**/*Interceptor*",
-        "**/*Filter*",
-        "**/*Resolver*",
-        "**/*Entity*",
-        "**/test/**",
-        "**/resources/**"
+        '**.dto.**',
+        '**.event.**',
+        '**.*InitData*',
+        '**.*Application*',
+        '**.exception.**',
+        '**.aop.**',
+        '**.config.**',
+        "**.entity.**"
+
 ]
 
 def QDomains = []
@@ -80,23 +76,23 @@ for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
     QDomains.add(qPattern + '*')
 }
 
-// jacoco Report 생성
+
 jacocoTestReport {
-    dependsOn test // test 종속성 추가
-
+    dependsOn test    // 테스트가 수행되어야만 report를 생성할 수 있도록 설정
     reports {
-        xml.required = true
-        csv.required = false
-        html.required = true
-    }
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(true)
 
+    }
 
     afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: jacocoExcludePatterns + QDomains)
-        }))
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains) // Querydsl 관련 제거
+                })
+        )
     }
-
     finalizedBy 'jacocoTestCoverageVerification'
 }
 
@@ -139,6 +135,7 @@ sonar {
         property 'sonar.language', 'java'
         property 'sonar.sourceEncoding', 'UTF-8'
         property 'sonar.test.exclusions', jacocoExcludePatterns.join(',')
+        property 'sonar.coverage.exclusions', jacocoExcludePatterns.join(',')
         property 'sonar.test.inclusions', '**/*Test.java'
         property 'sonar.java.coveragePlugin', 'jacoco'
         property 'sonar.coverage.jacoco.xmlReportPaths', jacocoDir.get().file("jacoco/index.xml").asFile
