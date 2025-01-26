@@ -75,6 +75,11 @@ def jacocoExcludePatterns = [
         "**/resources/**"
 ]
 
+def QDomains = []
+for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
+    QDomains.add(qPattern + '*')
+}
+
 // jacoco Report 생성
 jacocoTestReport {
     dependsOn test // test 종속성 추가
@@ -85,14 +90,10 @@ jacocoTestReport {
         html.required = true
     }
 
-    def QDomainList = []
-    for (qPattern in '**/QA'..'**/QZ') { // QClass 대응
-        QDomainList.add(qPattern + '*')
-    }
 
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: jacocoExcludePatterns + QDomainList)
+            fileTree(dir: it, exclude: jacocoExcludePatterns + QDomains)
         }))
     }
 
