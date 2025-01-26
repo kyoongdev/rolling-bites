@@ -72,13 +72,13 @@ def jacocoExcludePatterns = [
 ]
 
 def QDomains = []
-for (qPattern in '*.QA'..'*.QZ') { // qPattern = '*.QA', '*.QB', ... '*.QZ'
+for (qPattern in '*.QA'..'*.QZ') {
     QDomains.add(qPattern + '*')
 }
 
 
 jacocoTestReport {
-    dependsOn test    // 테스트가 수행되어야만 report를 생성할 수 있도록 설정
+    dependsOn test
     reports {
         html.required.set(true)
         xml.required.set(true)
@@ -89,7 +89,7 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
-                    fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains) // Querydsl 관련 제거
+                    fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains)
                 })
         )
     }
@@ -100,10 +100,8 @@ jacocoTestCoverageVerification {
 
     violationRules {
         rule {
-            // rule 활성화
-            enabled = true
 
-            // 클래스 단위로 룰 체크
+            enabled = true
             element = 'CLASS'
 
 

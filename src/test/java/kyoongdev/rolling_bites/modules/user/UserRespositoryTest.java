@@ -15,7 +15,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class UserRespositoryTest {
+class UserRespositoryTest {
 
   @Autowired
   UserRepository userRepository;
@@ -43,8 +43,27 @@ public class UserRespositoryTest {
 
     Optional<User> user = userRepository.findUserBySocialId("123123");
 
-    Assertions.assertEquals(user.isPresent(), true);
-    Assertions.assertEquals(user.get().getSocialId(), "123123");
+    Assertions.assertTrue(user.isPresent());
+    Assertions.assertEquals("123123", user.get().getSocialId());
     Assertions.assertEquals(user.get().getSocialType(), SocialType.KAKAO.getSocialType());
+  }
+
+
+  @Test
+  @DisplayName("유저 닉네입 조회 테스트")
+  void findUserByNickname() {
+
+    SocialType socialType = SocialType.valueOf("KAKAO");
+    User newUser = User.builder().nickname("유저1").socialId("123123")
+        .socialType(socialType.getSocialType()).build();
+
+    userRepository.save(newUser);
+
+    Optional<User> user = userRepository.findUserByNickname("유저1");
+
+    Assertions.assertTrue(user.isPresent());
+    Assertions.assertEquals("유저1", user.get().getNickname());
+
+
   }
 }
