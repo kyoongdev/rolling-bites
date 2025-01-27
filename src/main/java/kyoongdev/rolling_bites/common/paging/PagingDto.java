@@ -1,4 +1,4 @@
-package kyoongdev.rolling_bites.common.dto;
+package kyoongdev.rolling_bites.common.paging;
 
 
 import lombok.Data;
