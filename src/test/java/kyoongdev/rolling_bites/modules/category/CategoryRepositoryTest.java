@@ -2,17 +2,15 @@ package kyoongdev.rolling_bites.modules.category;
 
 
 import java.util.Optional;
+import kyoongdev.rolling_bites.common.annotation.RepositoryTest;
 import kyoongdev.rolling_bites.modules.category.entity.Category;
 import kyoongdev.rolling_bites.modules.category.repository.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@RepositoryTest
 class CategoryRepositoryTest {
 
   @Autowired

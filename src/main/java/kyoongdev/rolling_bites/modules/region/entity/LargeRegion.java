@@ -1,6 +1,7 @@
 package kyoongdev.rolling_bites.modules.region.entity;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,13 +27,13 @@ import lombok.NoArgsConstructor;
 public class LargeRegion {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "name", unique = true)
   private String name;
 
-  @OneToMany(mappedBy = "largeRegion", fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "largeRegion", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
   private List<SmallRegion> smallRegions = new ArrayList<>();
 
 }

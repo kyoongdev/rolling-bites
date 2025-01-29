@@ -2,6 +2,7 @@ package kyoongdev.rolling_bites.modules.user;
 
 
 import java.util.Optional;
+import kyoongdev.rolling_bites.common.annotation.RepositoryTest;
 import kyoongdev.rolling_bites.modules.user.entity.User;
 import kyoongdev.rolling_bites.modules.user.enums.SocialType;
 import kyoongdev.rolling_bites.modules.user.repository.UserRepository;
@@ -9,13 +10,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class UserRespositoryTest {
+@RepositoryTest
+class UserRepositoryTest {
 
   @Autowired
   UserRepository userRepository;

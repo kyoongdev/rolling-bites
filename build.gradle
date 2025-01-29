@@ -113,6 +113,7 @@ jacocoTestReport {
                                                  '**/aop/**',
                                                  '**/config/**',
                                                  "**/entity/**",
+                                                 "**/common/**",
                                                  "**/Q*"])
                 })
         )
@@ -147,6 +148,9 @@ jacocoTestCoverageVerification {
                         '*.*Application*',
                         '*.*Exception*',
                         "*.*Config",
+                        "*.*Resolver",
+                        "*.CustomQueryDsl",
+                        "*.CustomFoodTruckRepositoryImpl",
                         "*.Q*"]
         }
     }

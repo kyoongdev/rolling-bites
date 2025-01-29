@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 public class FoodTruck {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "name", unique = true)
@@ -47,5 +47,7 @@ public class FoodTruck {
   private FoodTruckRegion region;
 
   @OneToMany(mappedBy = "foodTruck", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @Builder.Default
   private List<FoodTruckCategory> categories = new ArrayList<>();
+
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import kyoongdev.rolling_bites.common.paging.PagingDto;
+import kyoongdev.rolling_bites.common.queryDsl.CustomQueryDsl;
 import kyoongdev.rolling_bites.modules.category.entity.QCategory;
 import kyoongdev.rolling_bites.modules.foodTruck.dto.FindFoodTruckCategoryDto;
 import kyoongdev.rolling_bites.modules.foodTruck.dto.FindFoodTruckDto;
@@ -18,14 +19,15 @@ import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckCategory;
 import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckRegion;
 import kyoongdev.rolling_bites.modules.region.entity.QLargeRegion;
 import kyoongdev.rolling_bites.modules.region.entity.QSmallRegion;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@RequiredArgsConstructor
-public class CustomFoodTruckRepositoryImpl implements CustomFoodTruckRepository {
+public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
+    CustomFoodTruckRepository {
 
-  private final JPAQueryFactory jpaQueryFactory;
+  @Autowired
+  JPAQueryFactory jpaQueryFactory;
 
   QFoodTruck foodTruck = QFoodTruck.foodTruck;
   QFoodTruckCategory foodTruckCategory = QFoodTruckCategory.foodTruckCategory;
@@ -67,8 +69,9 @@ public class CustomFoodTruckRepositoryImpl implements CustomFoodTruckRepository 
         .innerJoin(largeRegion).on(smallRegion.largeRegion.id.eq(largeRegion.id))
         .innerJoin(foodTruckCategory)
         .innerJoin(category).on(foodTruckCategory.category.id.eq(category.id))
-        .where(eqFoodTruckName(name), eqCategoryId(categoryId), eqLatLng(lat, lng),
-            eqSmallRegionId(smallRegionId))
+        .where(
+            filterWhereClause(eqFoodTruckName(name), eqCategoryId(categoryId), eqLatLng(lat, lng),
+                eqSmallRegionId(smallRegionId)))
         .offset(paging.getOffset())
         .limit(paging.getLimit())
         .groupBy(foodTruck.id)

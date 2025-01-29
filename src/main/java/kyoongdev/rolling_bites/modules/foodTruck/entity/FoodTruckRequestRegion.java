@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class FoodTruckRequestRegion {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "lat")

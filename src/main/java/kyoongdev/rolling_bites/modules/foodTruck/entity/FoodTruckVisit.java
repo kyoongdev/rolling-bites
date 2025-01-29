@@ -21,7 +21,7 @@ import org.springframework.data.annotation.CreatedDate;
 public class FoodTruckVisit {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @CreatedDate
