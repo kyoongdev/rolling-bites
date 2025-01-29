@@ -1,22 +1,26 @@
 package kyoongdev.rolling_bites.config;
 
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import org.springframework.context.annotation.Bean;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
+@OpenAPIDefinition(
+    info = @Info(
+        title = "Rolling Bites"
+    )
+)
+@SecurityScheme(
+    name = "Bearer Authentication",
+    type = SecuritySchemeType.HTTP,
+    bearerFormat = "JWT",
+    scheme = "bearer"
+)
 public class OpenApiConfig {
 
-  @Bean
-  public OpenAPI openAPI() {
-    Info info = new Info()
-        .title("Rolling Bites API Documents");
 
-    return new OpenAPI()
-        .components(new Components())
-        .info(info);
-  }
 }

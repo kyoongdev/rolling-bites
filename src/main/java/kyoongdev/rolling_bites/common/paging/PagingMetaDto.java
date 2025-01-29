@@ -30,10 +30,8 @@ public class PagingMetaDto {
     int limit = paging.getLimit();
     boolean hasPrev = page > 1;
     boolean hasNext = page * limit < count;
-
+    
     return new PagingMetaDto(total, page, limit, hasPrev, hasNext);
-
   }
-
 
 }
