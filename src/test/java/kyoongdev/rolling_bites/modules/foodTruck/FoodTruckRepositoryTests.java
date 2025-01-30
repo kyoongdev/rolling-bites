@@ -14,6 +14,8 @@ import kyoongdev.rolling_bites.modules.region.repository.SmallRegionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.util.StopWatch;
 
@@ -49,8 +51,8 @@ class FoodTruckRepositoryTests {
 //          executionPhase = ExecutionPhase.BEFORE_TEST_METHOD),
 
 //  })
-//  @Sql(value = "classpath:sql/delete-food-truck.sql",
-//      executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+  @Sql(value = "classpath:sql/delete-food-truck.sql",
+      executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void findFoodTrucks() {
     foodTruckBatch.setup();
     StopWatch stopWatch = new StopWatch();

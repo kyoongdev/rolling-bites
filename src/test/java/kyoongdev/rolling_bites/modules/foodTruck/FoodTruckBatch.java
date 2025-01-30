@@ -20,7 +20,7 @@ public class FoodTruckBatch {
   private final JdbcTemplate jdbcTemplate;
   private final DataSource jdbcDataSource;
 
-  private final int batchSize = 10;
+  private final int batchSize = 100;
   private static final int TOTAL_COUNT = 100_000; // 10만 개 생성
 
 
@@ -36,8 +36,8 @@ public class FoodTruckBatch {
       insertRegion();
       insertCategory();
       insertFoodTruckRegions();
-      insertFoodTruck();
-      insertFoodTruckCategory();
+//      insertFoodTruck();
+//      insertFoodTruckCategory();
 
     } catch (Exception e) {
       System.err.println("SETUP ERROR: " + e.getMessage());
@@ -78,69 +78,95 @@ public class FoodTruckBatch {
     ExecutorService executorService = Executors.newFixedThreadPool(
         hikariDataSource.getMaximumPoolSize());
     List<List<Object[]>> subLists = splitList(dataList);
-
+    System.out.println("Sublist Length  : " + subLists.size());
     List<Callable<Void>> tasks = subLists.stream()
         .map(subList -> (Callable<Void>) () -> {
+          System.out.println("쪼개기" + subLists.size());
           batchUpdateFoodTruckRegions(subList);
           return null;
         }).collect(Collectors.toList());
 
+    System.out.println("tasks : " + tasks.size());
     executeBatchTasks(executorService, tasks);
   }
 
+//  private void insertFoodTruck() {
+//    System.out.println("🔹 Inserting Food Trucks");
+//    List<Long> regionIds = jdbcTemplate.queryForList("SELECT id FROM food_truck_region",
+//        Long.class);
+//
+//    if (regionIds.isEmpty()) {
+//      System.out.println("⚠️ No data found in food_truck_region.");
+//      return;
+//    }
+//
+//    HikariDataSource hikariDataSource = (HikariDataSource) jdbcDataSource;
+//    ExecutorService executorService = Executors.newFixedThreadPool(
+//        hikariDataSource.getMaximumPoolSize());
+//    List<List<Long>> regionSubList = splitList(regionIds);
+//
+//    List<Callable<Void>> tasks = regionSubList.stream()
+//        .map(subList -> (Callable<Void>) () -> {
+//          batchUpdateFoodTruck(subList);
+//          return null;
+//        }).collect(Collectors.toList());
+//
+//    executeBatchTasks(executorService, tasks);
+//  }
 
-  private void insertFoodTruck() {
-    System.out.println("🔹 Inserting Food Trucks");
-    List<Long> regionIds = jdbcTemplate.queryForList("SELECT id FROM food_truck_region",
-        Long.class);
-
-    if (regionIds.isEmpty()) {
-      System.out.println("⚠️ No data found in food_truck_region.");
-      return;
-    }
-
-    HikariDataSource hikariDataSource = (HikariDataSource) jdbcDataSource;
-    ExecutorService executorService = Executors.newFixedThreadPool(
-        hikariDataSource.getMaximumPoolSize());
-    List<List<Long>> regionSubList = splitList(regionIds);
-
-    List<Callable<Void>> tasks = regionSubList.stream()
-        .map(subList -> (Callable<Void>) () -> {
-          batchUpdateFoodTruck(subList);
-          return null;
-        }).collect(Collectors.toList());
-
-    executeBatchTasks(executorService, tasks);
-  }
-
-
-  private void insertFoodTruckCategory() {
-    System.out.println("🔹 Inserting Food Truck Categories");
-    List<Long> foodTruckIds = jdbcTemplate.queryForList(
-        "SELECT id FROM food_truck ORDER BY id DESC LIMIT ?", Long.class, batchSize);
-    List<Long> categoryIds = jdbcTemplate.queryForList("SELECT id FROM category", Long.class);
-
-    if (foodTruckIds.isEmpty() || categoryIds.isEmpty()) {
-      System.out.println("⚠️ No data found for food_truck or category.");
-      return;
-    }
-
-    HikariDataSource hikariDataSource = (HikariDataSource) jdbcDataSource;
-    ExecutorService executorService = Executors.newFixedThreadPool(
-        hikariDataSource.getMaximumPoolSize());
-    List<List<Long>> foodTruckSubList = splitList(foodTruckIds);
-
-    List<Callable<Void>> tasks = foodTruckSubList.stream()
-        .map(subList -> (Callable<Void>) () -> {
-          batchUpdateFoodTruckCategory(subList, categoryIds);
-          return null;
-        }).collect(Collectors.toList());
-
-    executeBatchTasks(executorService, tasks);
-  }
-
+//
+//  private void insertFoodTruckCategory() {
+//    System.out.println("🔹 Inserting Food Truck Categories");
+//    List<Long> foodTruckIds = jdbcTemplate.queryForList(
+//        "SELECT id FROM food_truck ORDER BY id DESC LIMIT ?", Long.class, batchSize);
+//    List<Long> categoryIds = jdbcTemplate.queryForList("SELECT id FROM category", Long.class);
+//
+//    if (foodTruckIds.isEmpty() || categoryIds.isEmpty()) {
+//      System.out.println("⚠️ No data found for food_truck or category.");
+//      return;
+//    }
+//
+//    HikariDataSource hikariDataSource = (HikariDataSource) jdbcDataSource;
+//    ExecutorService executorService = Executors.newFixedThreadPool(
+//        hikariDataSource.getMaximumPoolSize());
+//    List<List<Long>> foodTruckSubList = splitList(foodTruckIds);
+//
+//    List<Callable<Void>> tasks = foodTruckSubList.stream()
+//        .map(subList -> (Callable<Void>) () -> {
+//          batchUpdateFoodTruckCategory(subList, categoryIds);
+//          return null;
+//        }).collect(Collectors.toList());
+//
+//    executeBatchTasks(executorService, tasks);
+//  }
 
   private void batchUpdateFoodTruckRegions(List<Object[]> dataList) {
+    System.out.println("🔹 Batch inserting food_truck_region..." +
+        jdbcTemplate.queryForObject("SELECT DATABASE()", String.class));
+
+    int batchCount = 0;
+    List<Object[]> batchData = new ArrayList<>(104);
+
+    for (int i = 0; i < dataList.size(); i++) {
+      batchData.add(dataList.get(i));
+
+      // batchSize 단위로 나눠서 실행
+      if ((i + 1) % batchSize == 0) {
+        batchCount = batchInsertFoodTruckRegions(batchData, batchCount);
+
+      }
+    }
+
+    // 남은 데이터 처리
+    if (!batchData.isEmpty()) {
+      batchCount = batchInsertFoodTruckRegions(batchData, batchCount);
+
+    }
+
+    System.out.println("🔹 Total batch insert executed: " + batchCount);
+  }
+
+  private int batchInsertFoodTruckRegions(List<Object[]> dataList, int batchCount) {
     jdbcTemplate.batchUpdate(
         "INSERT INTO food_truck_region (lat, lng, name, small_region_id) VALUES (?, ?, ?, ?)",
         new BatchPreparedStatementSetter() {
@@ -158,48 +184,48 @@ public class FoodTruckBatch {
             return dataList.size();
           }
         });
+    dataList.clear();
+    return batchCount + 1;
   }
 
+//  private void batchUpdateFoodTruck(List<Long> regionIds) {
+//    jdbcTemplate.batchUpdate(
+//        "INSERT INTO food_truck (name, open_at, close_at, region_id) VALUES (?, ?, ?, ?)",
+//        new BatchPreparedStatementSetter() {
+//          @Override
+//          public void setValues(PreparedStatement ps, int i) throws SQLException {
+//            ps.setString(1, "FoodTruck" + regionIds.get(i));
+//            ps.setInt(2, 10);
+//            ps.setInt(3, 22);
+//            ps.setLong(4, regionIds.get(i));
+//          }
+//
+//          @Override
+//          public int getBatchSize() {
+//            return regionIds.size();
+//          }
+//        });
+//  }
 
-  private void batchUpdateFoodTruck(List<Long> regionIds) {
-    jdbcTemplate.batchUpdate(
-        "INSERT INTO food_truck (name, open_at, close_at, region_id) VALUES (?, ?, ?, ?)",
-        new BatchPreparedStatementSetter() {
-          @Override
-          public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setString(1, "FoodTruck" + regionIds.get(i));
-            ps.setInt(2, 10);
-            ps.setInt(3, 22);
-            ps.setLong(4, regionIds.get(i));
-          }
-
-          @Override
-          public int getBatchSize() {
-            return regionIds.size();
-          }
-        });
-  }
-
-
-  private void batchUpdateFoodTruckCategory(List<Long> foodTruckIds, List<Long> categoryIds) {
-    jdbcTemplate.batchUpdate(
-        "INSERT INTO food_truck_category (food_truck_id, category_id) VALUES (?, ?)",
-        new BatchPreparedStatementSetter() {
-          @Override
-          public void setValues(PreparedStatement ps, int i) throws SQLException {
-            ps.setLong(1, foodTruckIds.get(i));
-            ps.setLong(2, categoryIds.get((int) (Math.random() * categoryIds.size())));
-          }
-
-          @Override
-          public int getBatchSize() {
-            return foodTruckIds.size();
-          }
-        });
-  }
+//  private void batchUpdateFoodTruckCategory(List<Long> foodTruckIds, List<Long> categoryIds) {
+//    jdbcTemplate.batchUpdate(
+//        "INSERT INTO food_truck_category (food_truck_id, category_id) VALUES (?, ?)",
+//        new BatchPreparedStatementSetter() {
+//          @Override
+//          public void setValues(PreparedStatement ps, int i) throws SQLException {
+//            ps.setLong(1, foodTruckIds.get(i));
+//            ps.setLong(2, categoryIds.get((int) (Math.random() * categoryIds.size())));
+//          }
+//
+//          @Override
+//          public int getBatchSize() {
+//            return foodTruckIds.size();
+//          }
+//        });
+//  }
 
   private <T> List<List<T>> splitList(List<T> list) {
-    List<List<T>> result = new ArrayList<>();
+    List<List<T>> result = new ArrayList<>(batchSize + 4);
     for (int i = 0; i < list.size(); i += batchSize) {
       result.add(list.subList(i, Math.min(i + batchSize, list.size())));
     }
@@ -211,8 +237,6 @@ public class FoodTruckBatch {
       executorService.invokeAll(tasks);
     } catch (InterruptedException e) {
       throw new RuntimeException("Batch execution interrupted", e);
-    } finally {
-      executorService.shutdown();
     }
   }
 }
