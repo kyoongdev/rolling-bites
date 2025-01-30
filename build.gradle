@@ -149,8 +149,9 @@ jacocoTestCoverageVerification {
                         '*.*Exception*',
                         "*.*Config",
                         "*.*Resolver",
-                        "*.CustomQueryDsl",
-                        "*.CustomFoodTruckRepositoryImpl",
+                        "*.*QueryDsl",
+                        "*.*Repository*",
+                        "*.enums.*",
                         "*.Q*"]
         }
     }

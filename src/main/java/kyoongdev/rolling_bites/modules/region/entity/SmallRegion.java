@@ -37,6 +37,6 @@ public class SmallRegion {
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "largeRegionId")
+  @JoinColumn(name = "large_region_id")
   private LargeRegion largeRegion;
 }

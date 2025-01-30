@@ -38,7 +38,7 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
 
   @Override
   public List<FindFoodTruckDto> findFoodTrucksWithPaging(String name, Long smallRegionId,
-      Long categoryId, Integer lat, Integer lng, PagingDto paging) {
+      Long categoryId, String lat, String lng, PagingDto paging) {
 
     return jpaQueryFactory
         .select(
@@ -81,8 +81,8 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
 
   @Override
   public Integer countFoodTrucks(String name, Long smallRegionId,
-      Long categoryId, Integer lat,
-      Integer lng) {
+      Long categoryId, String lat,
+      String lng) {
     return Objects.requireNonNull(jpaQueryFactory
         .select(
             foodTruck.count()
@@ -117,8 +117,8 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
     return category.id.eq(categoryId);
   }
 
-  private BooleanExpression eqLatLng(Integer lat, Integer lng) {
-    if (Optional.ofNullable(lat).isEmpty() || Optional.ofNullable(lng).isEmpty()) {
+  private BooleanExpression eqLatLng(String lat, String lng) {
+    if (StringUtil.isNullOrEmpty(lat) || StringUtil.isNullOrEmpty(lng)) {
       return null;
     }
 

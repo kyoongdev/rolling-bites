@@ -8,13 +8,13 @@ public interface CustomFoodTruckRepository {
 
   List<FindFoodTruckDto> findFoodTrucksWithPaging(String name, Long smallRegionId,
       Long categoryId,
-      Integer lat,
-      Integer lng,
+      String lat,
+      String lng,
       PagingDto paging);
 
   Integer countFoodTrucks(String name, Long smallRegionId,
       Long categoryId,
-      Integer lat,
-      Integer lng);
+      String lat,
+      String lng);
 
 }

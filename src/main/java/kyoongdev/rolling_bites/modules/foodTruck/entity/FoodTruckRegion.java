@@ -31,16 +31,16 @@ public class FoodTruckRegion {
   private Long id;
 
   @Column(name = "lat")
-  private Integer lat;
+  private String lat;
 
   @Column(name = "lng")
-  private Integer lng;
+  private String lng;
 
   @Column(name = "name")
   private String name;
 
   @ManyToOne
-  @JoinColumn(name = "smallRegoinId")
+  @JoinColumn(name = "small_region_id")
   private SmallRegion smallRegion;
 
 

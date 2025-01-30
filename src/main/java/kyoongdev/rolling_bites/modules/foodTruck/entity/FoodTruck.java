@@ -43,7 +43,7 @@ public class FoodTruck {
 
 
   @OneToOne
-  @JoinColumn(name = "foodTruckRegionId")
+  @JoinColumn(name = "region_id")
   private FoodTruckRegion region;
 
   @OneToMany(mappedBy = "foodTruck", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)

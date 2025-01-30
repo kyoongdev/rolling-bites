@@ -1,0 +1,72 @@
+DROP TABLE IF EXISTS numbers;
+CREATE TABLE IF NOT EXISTS numbers (num INT) ENGINE = MEMORY;
+ALTER TABLE numbers ADD PRIMARY KEY (num);
+
+
+SET autocommit = 0;
+START TRANSACTION;
+
+INSERT INTO large_region (name)
+VALUES ('test_large_region_for_food_truck');
+
+
+INSERT INTO small_region (name, large_region_id)
+SELECT CONCAT('foot_truck_small_region_', id),id
+FROM large_region;
+
+INSERT INTO category (name)
+VALUES ('순대');
+INSERT INTO category (name)
+VALUES ('떡볶이');
+
+
+INSERT INTO numbers (num)
+SELECT t1.N + t2.N * 10 + t3.N * 100 + t4.N * 1000 + t5.N * 10000 + 1
+FROM
+    (SELECT 0 N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+     UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1
+        CROSS JOIN
+    (SELECT 0 N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+     UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2
+        CROSS JOIN
+    (SELECT 0 N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+     UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3
+        CROSS JOIN
+    (SELECT 0 N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+     UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t4
+        CROSS JOIN
+    (SELECT 0 N UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+     UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t5
+    LIMIT 100000;
+
+
+INSERT INTO food_truck_region (lat, lng, name, small_region_id)
+SELECT
+        36.00001 + num * 0.00001,
+        38.00001 + num * 0.00001,
+        '서울 특별시 어쩌구 저쩌구',
+        sr.id
+FROM numbers n
+         JOIN (
+    SELECT id, ROW_NUMBER() OVER () AS rn FROM small_region
+) sr ON n.num % (SELECT COUNT(*) FROM small_region) = sr.rn % (SELECT COUNT(*) FROM small_region)
+LIMIT 100000;
+
+
+INSERT INTO food_truck (name, open_at, close_at, region_id)
+SELECT CONCAT('FoodTruck', id), 10, 22, id
+FROM food_truck_region;
+
+INSERT INTO food_truck_category (food_truck_id, category_id)
+SELECT
+    ft.id,
+    c.id
+FROM
+    (SELECT id FROM food_truck ORDER BY id DESC LIMIT 1) ft
+        JOIN
+    (SELECT id FROM category ORDER BY RAND() LIMIT 1) c;
+
+
+COMMIT;
+SET autocommit = 1;
+DROP TABLE IF EXISTS numbers;
