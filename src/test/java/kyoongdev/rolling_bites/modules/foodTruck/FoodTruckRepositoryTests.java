@@ -8,7 +8,6 @@ import kyoongdev.rolling_bites.modules.foodTruck.entity.FoodTruck;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckCategoryRepository;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckRegionRepository;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckRepository;
-import kyoongdev.rolling_bites.modules.region.entity.LargeRegion;
 import kyoongdev.rolling_bites.modules.region.repository.LargeRegionRepository;
 import kyoongdev.rolling_bites.modules.region.repository.SmallRegionRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -58,12 +57,11 @@ class FoodTruckRepositoryTests {
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
     List<FoodTruck> foodTrucks = foodTruckRepository.findAll();
-    List<LargeRegion> largeRegions = largeRegionRepository.findAll();
 
+    System.out.println("푸드 트럭 리전 개수: " + foodTruckRegionRepository.findAll().size());
+    System.out.println("푸드 트럭 리전 개수: " + foodTruckRegionRepository.findAll().size());
     System.out.println("findFoodTrucks 실행 시간: " + stopWatch.getTotalTimeNanos() + " ns");
 
-    System.out.println("푸드 트럭 개수: " + foodTrucks.size());
-    System.out.println("리전 개수: " + largeRegions.size());
   }
 
 

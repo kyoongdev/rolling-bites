@@ -30,6 +30,11 @@ spring:
         jdbc:
           batch_size: 10
     generate-ddl: true
+---
+
+multi-thread:
+  thread-count: 4
+
 
 
 ---

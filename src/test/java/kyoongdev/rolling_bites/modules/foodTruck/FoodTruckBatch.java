@@ -1,38 +1,34 @@
 package kyoongdev.rolling_bites.modules.foodTruck;
 
-import com.zaxxer.hikari.HikariDataSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-import javax.sql.DataSource;
+import kyoongdev.rolling_bites.common.batch.MultiThreadExecutor;
+import kyoongdev.rolling_bites.modules.foodTruck.dto.FoodTruckRegionBatchDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class FoodTruckBatch {
 
+
   private final JdbcTemplate jdbcTemplate;
-  private final DataSource jdbcDataSource;
-
-  private final int batchSize = 100;
-  private static final int TOTAL_COUNT = 100_000; // 10만 개 생성
 
 
-  public FoodTruckBatch(JdbcTemplate jdbcTemplate, DataSource jdbcDataSource) {
-    this.jdbcTemplate = jdbcTemplate;
-    this.jdbcDataSource = jdbcDataSource;
-  }
+  private final MultiThreadExecutor multiThreadExecutor;
+
+
+  private final int TOTAL_COUNT = 10000; // 10만 개 생성
+
 
   void setup() {
     try {
       System.out.println("🔹 Setting up test database...");
 
-      insertRegion();
-      insertCategory();
-      insertFoodTruckRegions();
+//      insertRegion();
+//      insertCategory();
+//      insertFoodTruckRegions();
 //      insertFoodTruck();
 //      insertFoodTruckCategory();
 
@@ -42,15 +38,20 @@ public class FoodTruckBatch {
   }
 
   private void insertRegion() {
+    jdbcTemplate.execute("START TRANSACTION ");
     jdbcTemplate.update(
         "INSERT INTO large_region (name) VALUES ('test_large_region_for_food_truck')");
     jdbcTemplate.update("INSERT INTO small_region (name, large_region_id) " +
         "SELECT CONCAT('foot_truck_small_region_', id), id FROM large_region");
+
+    jdbcTemplate.execute("COMMIT");
   }
 
   private void insertCategory() {
+    jdbcTemplate.execute("START TRANSACTION ");
     jdbcTemplate.update("INSERT INTO category (name) VALUES ('순대')");
     jdbcTemplate.update("INSERT INTO category (name) VALUES ('떡볶이')");
+    jdbcTemplate.execute("COMMIT");
   }
 
 
@@ -61,32 +62,21 @@ public class FoodTruckBatch {
         Long.class);
 
     // 10만 개의 데이터 생성
-    List<Object[]> dataList = new ArrayList<>();
+    List<FoodTruckRegionBatchDto> dataList = new ArrayList<>();
     for (int i = 0; i < TOTAL_COUNT; i++) {
-      dataList.add(new Object[]{
-          36.00001 + i * 0.00001,
-          38.00001 + i * 0.00001,
-          "서울 특별시 어쩌구 저쩌구",
-          smallRegionIds.get(i % smallRegionIds.size()) // 랜덤한 smallRegion ID 배정
-      });
+
+      dataList.add(FoodTruckRegionBatchDto.builder().lat(String.valueOf(36.00001 + i * 0.00001))
+          .lng(String.valueOf(40 + i * 0.00001)).name("서울 특별시 어쩌구 저쩌구")
+          .smallRegionId(smallRegionIds.get(i % smallRegionIds.size())).build());
+
     }
 
-    HikariDataSource hikariDataSource = (HikariDataSource) jdbcDataSource;
-    ExecutorService executorService = Executors.newFixedThreadPool(
-        hikariDataSource.getMaximumPoolSize());
-    List<List<Object[]>> subLists = splitList(dataList);
+//    multiThreadExecutor.executeBatch(dataList, TOTAL_COUNT, BATCH_SIZE, () -> {
+//      batchInsertFoodTruckRegions(dataList);
+//      return null;
+//    });
 
-    System.out.println("Sublist Length  : " + subLists.size());
-
-    List<Callable<Void>> tasks = subLists.stream()
-        .map(subList -> (Callable<Void>) () -> {
-          System.out.println("쪼개기" + subLists.size());
-          batchUpdateFoodTruckRegions(subList);
-          return null;
-        }).collect(Collectors.toList());
-
-    System.out.println("tasks : " + tasks.size());
-    executeBatchTasks(executorService, tasks);
+    jdbcTemplate.execute("COMMIT");
   }
 
 //  private void insertFoodTruck() {
@@ -139,78 +129,6 @@ public class FoodTruckBatch {
 //    executeBatchTasks(executorService, tasks);
 //  }
 
-  private void batchUpdateFoodTruckRegions(List<Object[]> dataList) throws Exception {
-    System.out.println("🔹 Batch inserting food_truck_region..." +
-        jdbcTemplate.queryForObject("SELECT DATABASE()", String.class));
-
-    int batchCount = 0;
-    List<Object[]> batchData = new ArrayList<>(104);
-
-    for (int i = 0; i < dataList.size(); i++) {
-      batchData.add(dataList.get(i));
-
-      // batchSize 단위로 나눠서 실행
-      if ((i + 1) % batchSize == 0) {
-        batchCount = batchInsertFoodTruckRegions(batchData, batchCount);
-
-      }
-    }
-
-    // 남은 데이터 처리
-    if (!batchData.isEmpty()) {
-      batchCount = batchInsertFoodTruckRegions(batchData, batchCount);
-
-    }
-
-    System.out.println("🔹 Total batch insert executed: " + batchCount);
-  }
-
-  private int batchInsertFoodTruckRegions(List<Object[]> dataList, int batchCount)
-      throws Exception {
-
-    try {
-      jdbcTemplate.batchUpdate(
-          "INSERT INTO food_truck_region (lat, lng, name, small_region_id) VALUES (?, ?, ?, ?)",
-          dataList, dataList.size(), (ps, data) -> {
-
-            System.out.println(data[0] + " " + data[1] + " " + data[2] + " " + data[3]);
-            ps.setDouble(1, (Double) data[0]); //TODO: setString
-            ps.setDouble(2, (Double) data[1]); //TODO: setString
-            ps.setString(3, (String) data[2]);
-            ps.setLong(4, (Long) data[3]);
-          });
-    } catch (Exception e) {
-      System.out.println("에러다 이놈아" + e.getMessage());
-
-    }
-
-//    jdbcTemplate.batchUpdate(
-//        "INSERT INTO food_truck_region (lat, lng, name, small_region_id) VALUES (?, ?, ?, ?)",
-//        new BatchPreparedStatementSetter() {
-//          @Override
-//          public void setValues(PreparedStatement ps, int i) {
-//            try {
-//              Object[] data = dataList.get(i);
-//              System.out.println(data[0] + " " + data[1] + " " + data[2] + " " + data[3]);
-//              ps.setDouble(1, (Double) data[0]);
-//              ps.setDouble(2, (Double) data[1]);
-//              ps.setString(3, (String) data[2]);
-//              ps.setLong(4, (Long) data[3]);
-//            } catch (Exception e) {
-//              System.out.println(e.getMessage());
-//            }
-//          }
-//
-//          @Override
-//          public int getBatchSize() {
-//            return dataList.size();
-//          }
-//        });
-    dataList.clear();
-
-    return batchCount + 1;
-  }
-
 //  private void batchUpdateFoodTruck(List<Long> regionIds) {
 //    jdbcTemplate.batchUpdate(
 //        "INSERT INTO food_truck (name, open_at, close_at, region_id) VALUES (?, ?, ?, ?)",
@@ -247,22 +165,5 @@ public class FoodTruckBatch {
 //        });
 //  }
 
-  private <T> List<List<T>> splitList(List<T> list) {
-    List<List<T>> result = new ArrayList<>(batchSize + 4);
-    for (int i = 0; i < list.size(); i += batchSize) {
-      result.add(list.subList(i, Math.min(i + batchSize, list.size())));
-    }
-    return result;
-  }
 
-  private void executeBatchTasks(ExecutorService executorService, List<Callable<Void>> tasks)
-      throws Exception {
-    try {
-      executorService.invokeAll(tasks);
-    } catch (InterruptedException e) {
-      throw new RuntimeException("Batch execution interrupted", e);
-    } finally {
-      executorService.shutdown();
-    }
-  }
 }
