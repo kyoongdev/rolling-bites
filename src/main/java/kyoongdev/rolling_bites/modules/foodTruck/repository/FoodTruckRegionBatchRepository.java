@@ -17,7 +17,7 @@ public class FoodTruckRegionBatchRepository implements BatchRepository<FoodTruck
 
   @Override
   public void batchInsert(List<FoodTruckRegionBatchDto> dataList) {
-    jdbcTemplate.batchUpdate(
+    int[][] result = jdbcTemplate.batchUpdate(
         "INSERT INTO food_truck_region (lat, lng, name, small_region_id) VALUES (?, ?, ?, ?)",
         dataList, dataList.size(), (ps, data) -> {
           ps.setString(1, data.getLat());
@@ -25,6 +25,8 @@ public class FoodTruckRegionBatchRepository implements BatchRepository<FoodTruck
           ps.setString(3, data.getName());
           ps.setLong(4, data.getSmallRegionId());
         });
+
+    System.out.println("?RESULT : " + result);
   }
 
 

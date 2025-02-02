@@ -5,7 +5,7 @@ spring:
     import: optional:file:.env[.properties]  # .env import
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
   devtools:
@@ -33,9 +33,7 @@ spring:
 ---
 
 multi-thread:
-  thread-count: 4
-
-
+  thread-count: 15
 
 ---
 

@@ -86,6 +86,7 @@ def jacocoExcludePatterns = [
         '**.aop.**',
         '**.config.**',
         "**.entity.**",
+        "**.common.**",
         "**.Q*"
 
 ]
@@ -108,16 +109,7 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
-                    fileTree(dir: it, excludes: ['**/dto/**',
-                                                 '**/event/**',
-                                                 '**/*InitData*',
-                                                 '**/*Application*',
-                                                 '**/exception/**',
-                                                 '**/aop/**',
-                                                 '**/config/**',
-                                                 "**/entity/**",
-                                                 "**/common/**",
-                                                 "**/Q*"])
+                    fileTree(dir: it, excludes: jacocoExcludePatterns + QDomains)
                 })
         )
     }
@@ -155,7 +147,9 @@ jacocoTestCoverageVerification {
                         "*.*QueryDsl",
                         "*.*Repository*",
                         "*.enums.*",
-                        "*.Q*"]
+                        "*.Q*",
+                        "*.common.batch.*"
+            ]
         }
     }
 }

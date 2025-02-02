@@ -1,10 +1,8 @@
 package kyoongdev.rolling_bites.modules.foodTruck;
 
-import java.util.List;
 import kyoongdev.rolling_bites.common.annotation.RepositoryTest;
 import kyoongdev.rolling_bites.config.FoodTruckConfig;
 import kyoongdev.rolling_bites.modules.category.repository.CategoryRepository;
-import kyoongdev.rolling_bites.modules.foodTruck.entity.FoodTruck;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckCategoryRepository;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckRegionRepository;
 import kyoongdev.rolling_bites.modules.foodTruck.repository.FoodTruckRepository;
@@ -45,21 +43,14 @@ class FoodTruckRepositoryTests {
 
   @Test
   @DisplayName("푸드 트럭 조회 테스트")
-//  @SqlGroup({
-//      @Sql(value = "classpath:sql/create-food-truck.sql",
-//          executionPhase = ExecutionPhase.BEFORE_TEST_METHOD),
-
-//  })
   @Sql(value = "classpath:sql/delete-food-truck.sql",
       executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void findFoodTrucks() {
     foodTruckBatch.setup();
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
-    List<FoodTruck> foodTrucks = foodTruckRepository.findAll();
 
-    System.out.println("푸드 트럭 리전 개수: " + foodTruckRegionRepository.findAll().size());
-    System.out.println("푸드 트럭 리전 개수: " + foodTruckRegionRepository.findAll().size());
+    System.out.println("FoodTrucks : " + foodTruckRepository.count());
     System.out.println("findFoodTrucks 실행 시간: " + stopWatch.getTotalTimeNanos() + " ns");
 
   }
