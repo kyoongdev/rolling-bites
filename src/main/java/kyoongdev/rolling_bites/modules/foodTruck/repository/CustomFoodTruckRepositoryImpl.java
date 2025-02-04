@@ -16,6 +16,7 @@ import kyoongdev.rolling_bites.common.queryDsl.CustomQueryDsl;
 import kyoongdev.rolling_bites.modules.category.entity.QCategory;
 import kyoongdev.rolling_bites.modules.foodTruck.dto.FindFoodTruckCategoryDto;
 import kyoongdev.rolling_bites.modules.foodTruck.dto.FindFoodTruckDto;
+import kyoongdev.rolling_bites.modules.foodTruck.dto.repository.FindFoodTrucksWhere;
 import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruck;
 import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckCategory;
 import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckRegion;
@@ -42,11 +43,10 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
   QLargeRegion largeRegion = QLargeRegion.largeRegion;
 
   @Override
-  public List<FindFoodTruckDto> findFoodTrucksWithPaging(String name, Long smallRegionId,
-      Long categoryId, String lat, String lng, PagingDto paging) {
+  public List<FindFoodTruckDto> findFoodTrucksWithPaging(FindFoodTrucksWhere where,
+      PagingDto paging) {
 
-    BooleanExpression[] whereClauses = filterWhereClause(startsWithFoodTruckName(name),
-        eqSmallRegionId(smallRegionId), eqCategoryId(categoryId), eqLatLng(lat, lng));
+    BooleanExpression[] whereClauses = findFoodTrucksWhere(where);
 
     Integer limit = paging.getLimit();
 
@@ -56,9 +56,9 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
 
 
   @Override
-  public Integer countFoodTrucks(String name, Long smallRegionId,
-      Long categoryId, String lat,
-      String lng) {
+  public Integer countFoodTrucks(FindFoodTrucksWhere where) {
+    BooleanExpression[] whereClauses = findFoodTrucksWhere(where);
+    
     return Objects.requireNonNull(jpaQueryFactory
         .select(
             foodTruck.count()
@@ -70,8 +70,7 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
         .innerJoin(foodTruckCategory)
         .on(foodTruckCategory.foodTruck.eq(foodTruck))
         .innerJoin(foodTruckCategory.category, category)
-        .where(eqFoodTruckName(name), eqCategoryId(categoryId), eqLatLng(lat, lng),
-            eqSmallRegionId(smallRegionId))
+        .where(whereClauses)
         .groupBy(foodTruck.id)
         .fetchOne()).intValue();
   }
@@ -155,6 +154,13 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
 
   }
 
+
+  private BooleanExpression[] findFoodTrucksWhere(FindFoodTrucksWhere where) {
+    return filterWhereClause(startsWithFoodTruckName(where.getName()),
+        eqSmallRegionId(where.getSmallRegionId()), eqCategoryId(where.getCategoryId()),
+        eqLatLng(where.getLat(), where.getLng()));
+
+  }
 
   private BooleanExpression eqFoodTruckName(String name) {
     if (StringUtil.isNullOrEmpty(name)) {
