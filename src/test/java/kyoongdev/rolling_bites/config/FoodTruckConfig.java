@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 
+
 @TestConfiguration
 @TestPropertySource(properties = {
     "spring.config.location = src/main/resources/application.yml"

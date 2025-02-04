@@ -7,7 +7,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 public class RollingBitesApplication {
 
+
   public static void main(String[] args) {
     SpringApplication.run(RollingBitesApplication.class, args);
   }
+
+
 }

@@ -58,8 +58,10 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     // querydsl
+    implementation 'org.hibernate:hibernate-core:6.3.1.Final'
+
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
@@ -148,7 +150,8 @@ jacocoTestCoverageVerification {
                         "*.*Repository*",
                         "*.enums.*",
                         "*.Q*",
-                        "*.common.batch.*"
+                        "*.common.batch.*",
+                        "*.common.*Aspect"
             ]
         }
     }

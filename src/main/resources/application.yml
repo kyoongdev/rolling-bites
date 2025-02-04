@@ -11,9 +11,11 @@ spring:
   devtools:
     restart:
       exclude: build/generated/**, **/querydsl/**
+    livereload:
+      enabled: true
   jpa:
     database: mysql
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
 
@@ -29,9 +31,11 @@ spring:
         order_updates: true
         jdbc:
           batch_size: 10
-    generate-ddl: true
----
 
+        show_sql: true
+    generate-ddl: true
+
+---
 multi-thread:
   thread-count: 15
 

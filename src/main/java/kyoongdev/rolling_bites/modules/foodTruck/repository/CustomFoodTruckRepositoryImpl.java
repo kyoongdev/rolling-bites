@@ -1,6 +1,8 @@
 package kyoongdev.rolling_bites.modules.foodTruck.repository;
 
 
+import static com.querydsl.core.group.GroupBy.list;
+
 import ch.qos.logback.core.util.StringUtil;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Projections;
@@ -19,15 +21,18 @@ import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckCategory;
 import kyoongdev.rolling_bites.modules.foodTruck.entity.QFoodTruckRegion;
 import kyoongdev.rolling_bites.modules.region.entity.QLargeRegion;
 import kyoongdev.rolling_bites.modules.region.entity.QSmallRegion;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
     CustomFoodTruckRepository {
 
-  @Autowired
-  JPAQueryFactory jpaQueryFactory;
+
+  private final JPAQueryFactory jpaQueryFactory;
+
+  private final int TRANFORM_MINIMUN_LIMIT = 500;
 
   QFoodTruck foodTruck = QFoodTruck.foodTruck;
   QFoodTruckCategory foodTruckCategory = QFoodTruckCategory.foodTruckCategory;
@@ -40,42 +45,13 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
   public List<FindFoodTruckDto> findFoodTrucksWithPaging(String name, Long smallRegionId,
       Long categoryId, String lat, String lng, PagingDto paging) {
 
-    return jpaQueryFactory
-        .select(
-            Projections.constructor(FindFoodTruckDto.class,
-                foodTruck.id.as("id"),
-                foodTruck.name.as("name"),
-                foodTruck.openAt.as("openAt"),
-                foodTruck.closeAt.as("closeAt"),
-                foodTruckRegion.id.as("foodTruckRegionId"),
-                foodTruckRegion.lat.as("lat"),
-                foodTruckRegion.lng.as("lng"),
-                foodTruckRegion.name.as("regionName"),
-                smallRegion.id.as("smallRegionId"),
-                smallRegion.name.as("smallRegionName"),
-                largeRegion.id.as("largeRegionId"),
-                largeRegion.name.as("largeRegionName"),
-                GroupBy.list(
-                    Projections.constructor(FindFoodTruckCategoryDto.class,
-                        category.id.as("id"),
-                        category.name.as("name")
-                    )
-                )
-            )
-        )
-        .from(foodTruck)
-        .innerJoin(foodTruckRegion)
-        .innerJoin(smallRegion).on(foodTruckRegion.smallRegion.id.eq(smallRegion.id))
-        .innerJoin(largeRegion).on(smallRegion.largeRegion.id.eq(largeRegion.id))
-        .innerJoin(foodTruckCategory)
-        .innerJoin(category).on(foodTruckCategory.category.id.eq(category.id))
-        .where(
-            filterWhereClause(eqFoodTruckName(name), eqCategoryId(categoryId), eqLatLng(lat, lng),
-                eqSmallRegionId(smallRegionId)))
-        .offset(paging.getOffset())
-        .limit(paging.getLimit())
-        .groupBy(foodTruck.id)
-        .fetch();
+    BooleanExpression[] whereClauses = filterWhereClause(startsWithFoodTruckName(name),
+        eqSmallRegionId(smallRegionId), eqCategoryId(categoryId), eqLatLng(lat, lng));
+
+    Integer limit = paging.getLimit();
+
+    return limit > TRANFORM_MINIMUN_LIMIT ? findFoodTrucksWithPagingByTransform(whereClauses,
+        paging) : findFoodTrucksWithPagingWithoutGroupBy(whereClauses, paging);
   }
 
 
@@ -88,16 +64,97 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
             foodTruck.count()
         )
         .from(foodTruck)
-        .innerJoin(foodTruckRegion)
+        .innerJoin(foodTruckRegion).on(foodTruckRegion.id.eq(foodTruck.region.id))
         .innerJoin(smallRegion).on(foodTruckRegion.smallRegion.id.eq(smallRegion.id))
         .innerJoin(largeRegion).on(smallRegion.largeRegion.id.eq(largeRegion.id))
         .innerJoin(foodTruckCategory)
-        .innerJoin(category).on(foodTruckCategory.category.id.eq(category.id))
+        .on(foodTruckCategory.foodTruck.eq(foodTruck))
+        .innerJoin(foodTruckCategory.category, category)
         .where(eqFoodTruckName(name), eqCategoryId(categoryId), eqLatLng(lat, lng),
             eqSmallRegionId(smallRegionId))
         .groupBy(foodTruck.id)
         .fetchOne()).intValue();
   }
+
+
+  private List<FindFoodTruckDto> findFoodTrucksWithPagingByTransform(
+      BooleanExpression[] whereClauses, PagingDto paging) {
+    return jpaQueryFactory
+        .from(foodTruck)
+        .innerJoin(foodTruckRegion).on(foodTruckRegion.id.eq(foodTruck.region.id))
+        .innerJoin(smallRegion).on(foodTruckRegion.smallRegion.id.eq(smallRegion.id))
+        .innerJoin(largeRegion).on(smallRegion.largeRegion.id.eq(largeRegion.id))
+        .innerJoin(foodTruckCategory)
+        .on(foodTruckCategory.foodTruck.eq(foodTruck))
+        .innerJoin(foodTruckCategory.category, category)
+        .where(whereClauses)
+        .offset(paging.getOffset())
+        .limit(paging.getLimit())
+        .transform(
+            GroupBy.groupBy(foodTruck.id).list(Projections.constructor(FindFoodTruckDto.class,
+                foodTruck.id.as("id"),
+                foodTruck.name.as("name"),
+                foodTruck.openAt.as("openAt"),
+                foodTruck.closeAt.as("closeAt"),
+                foodTruckRegion.id.as("foodTruckRegionId"),
+                foodTruckRegion.lat.as("lat"),
+                foodTruckRegion.lng.as("lng"),
+                foodTruckRegion.name.as("regionName"),
+                smallRegion.id.as("smallRegionId"),
+                smallRegion.name.as("smallRegionName"),
+                largeRegion.id.as("largeRegionId"),
+                largeRegion.name.as("largeRegionName"),
+                list(
+                    Projections.constructor(FindFoodTruckCategoryDto.class,
+                        category.id.as("categoryId"),
+                        category.name.as("categoryName")
+                    )
+
+                )
+            )));
+  }
+
+  private List<FindFoodTruckDto> findFoodTrucksWithPagingWithoutGroupBy(
+      BooleanExpression[] whereClauses, PagingDto paging) {
+    List<FindFoodTruckDto> foodTrucks = jpaQueryFactory
+        .select(Projections.constructor(FindFoodTruckDto.class,
+            foodTruck.id.as("id"),
+            foodTruck.name.as("name"),
+            foodTruck.openAt.as("openAt"),
+            foodTruck.closeAt.as("closeAt"),
+            foodTruckRegion.id.as("foodTruckRegionId"),
+            foodTruckRegion.lat.as("lat"),
+            foodTruckRegion.lng.as("lng"),
+            foodTruckRegion.name.as("regionName"),
+            smallRegion.id.as("smallRegionId"),
+            smallRegion.name.as("smallRegionName"),
+            largeRegion.id.as("largeRegionId"),
+            largeRegion.name.as("largeRegionName")))
+        .from(foodTruck)
+        .innerJoin(foodTruckRegion).on(foodTruckRegion.id.eq(foodTruck.region.id))
+        .innerJoin(smallRegion).on(foodTruckRegion.smallRegion.id.eq(smallRegion.id))
+        .innerJoin(largeRegion).on(smallRegion.largeRegion.id.eq(largeRegion.id))
+        .where(whereClauses)
+        .offset(paging.getOffset())
+        .limit(paging.getLimit())
+        .fetch();
+
+    for (FindFoodTruckDto foodTruckDto : foodTrucks) {
+      List<FindFoodTruckCategoryDto> categories = jpaQueryFactory.select(Projections.constructor(
+              FindFoodTruckCategoryDto.class,
+              category.id,
+              category.name
+          )).from(foodTruckCategory)
+          .innerJoin(category).on(category.eq(foodTruckCategory.category))
+          .where(foodTruckCategory.foodTruck.id.eq(foodTruckDto.getId())).fetch();
+
+      foodTruckDto.setCategories(categories);
+    }
+
+    return foodTrucks;
+
+  }
+
 
   private BooleanExpression eqFoodTruckName(String name) {
     if (StringUtil.isNullOrEmpty(name)) {
@@ -105,6 +162,14 @@ public class CustomFoodTruckRepositoryImpl extends CustomQueryDsl implements
     }
 
     return foodTruck.name.eq(name);
+  }
+
+  private BooleanExpression startsWithFoodTruckName(String name) {
+    if (StringUtil.isNullOrEmpty(name)) {
+      return null;
+    }
+
+    return foodTruck.name.startsWith(name);
   }
 
 

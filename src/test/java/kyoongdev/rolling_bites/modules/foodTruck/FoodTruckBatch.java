@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-
 public class FoodTruckBatch {
 
 
@@ -30,7 +29,7 @@ public class FoodTruckBatch {
   private final int TOTAL_COUNT = 100_000; // 10만 개 생성
 
 
-  void setup() {
+  void saveAll() {
     try {
       System.out.println("🔹 Setting up test database...");
 

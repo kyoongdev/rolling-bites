@@ -42,7 +42,7 @@ public class FoodTruck {
   private Integer closeAt;
 
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "region_id")
   private FoodTruckRegion region;
 

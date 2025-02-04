@@ -1,8 +1,10 @@
 package kyoongdev.rolling_bites.modules.foodTruck.entity;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,7 +41,7 @@ public class FoodTruckRegion {
   @Column(name = "name")
   private String name;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "small_region_id")
   private SmallRegion smallRegion;
 

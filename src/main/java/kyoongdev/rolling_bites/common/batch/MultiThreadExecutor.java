@@ -21,17 +21,17 @@ public class MultiThreadExecutor {
       throws ExecutionException, InterruptedException {
     ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREAD);
     List<Future<?>> futures = new ArrayList<>();
-    int batchSize = (int) Math.ceil((double) totalCount / NUM_THREAD); // 올바른 배치 크기 계산
+    int batchSize = (int) Math.ceil((double) totalCount / NUM_THREAD);
 
     for (int i = 0; i < NUM_THREAD; i++) {
       int start = i * batchSize;
-      int end = Math.min(start + batchSize, totalCount); // 데이터 손실 방지
+      int end = Math.min(start + batchSize, totalCount);
 
       if (start >= end) {
         break;
       }
 
-      List<T> subList = new ArrayList<>(dataList.subList(start, end)); // subList 안전하게 복사
+      List<T> subList = new ArrayList<>(dataList.subList(start, end));
 
       futures.add(executorService.submit(() -> {
         try {

@@ -33,7 +33,7 @@ public class LargeRegion {
   @Column(name = "name", unique = true)
   private String name;
 
-  @OneToMany(mappedBy = "largeRegion", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+  @OneToMany(mappedBy = "largeRegion", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<SmallRegion> smallRegions = new ArrayList<>();
 
 }

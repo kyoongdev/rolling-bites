@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FindFoodTruckCategoryDto {
 
-  private Long id;
+  private Long categoryId;
 
   private String categoryName;
 
