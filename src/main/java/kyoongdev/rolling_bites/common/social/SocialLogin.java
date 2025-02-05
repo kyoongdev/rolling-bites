@@ -1,6 +1,7 @@
 package kyoongdev.rolling_bites.common.social;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import kyoongdev.rolling_bites.modules.user.enums.SocialType;
 
 public abstract class SocialLogin {
@@ -13,7 +14,7 @@ public abstract class SocialLogin {
   }
 
 
-  public abstract void getRest(HttpServletResponse response);
+  public abstract void getRest(HttpServletResponse response) throws IOException;
 
   public abstract String getToken(String code);
 

@@ -6,7 +6,8 @@ import lombok.Getter;
 @Getter
 public enum SocialType {
 
-  KAKAO(1);
+  KAKAO(1),
+  GOOGLE(2);
 
   private final Integer socialType;
 
