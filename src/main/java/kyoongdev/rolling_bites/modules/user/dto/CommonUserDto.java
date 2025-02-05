@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class CommonUserDto {
 
-  private Long id;
+  private Integer id;
 
   private String nickname;
 
@@ -17,5 +17,5 @@ public class CommonUserDto {
 
   private SocialType socialType;
 
-  
+
 }

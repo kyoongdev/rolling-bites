@@ -39,7 +39,7 @@ class UserRepositoryTest {
 
     userRepository.save(newUser);
 
-    Optional<User> user = userRepository.findUserBySocialId("123123");
+    Optional<User> user = userRepository.findBySocialId("123123");
 
     Assertions.assertTrue(user.isPresent());
     Assertions.assertEquals("123123", user.get().getSocialId());
@@ -57,7 +57,7 @@ class UserRepositoryTest {
 
     userRepository.save(newUser);
 
-    Optional<User> user = userRepository.findUserByNickname("유저1");
+    Optional<User> user = userRepository.findByNickname("유저1");
 
     Assertions.assertTrue(user.isPresent());
     Assertions.assertEquals("유저1", user.get().getNickname());

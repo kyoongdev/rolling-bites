@@ -7,14 +7,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
-public class BaseUpdateDto {
+public abstract class UpdateDto<Entity> {
+
+  public abstract Entity toEntity(Entity origin);
 
   //Null 값 인 property 를 찾아서 String[] 로 반환
-  protected String[] getNullPropertyNames(Object source) {
+  public String[] getNullPropertyNames(Object source) {
     final BeanWrapper src = new BeanWrapperImpl(source);
     PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
-    Set<String> emptyNames = new HashSet<>();
+    Set<String> emptyNames = new HashSet<String>();
     for (PropertyDescriptor pd : pds) {
       Object srcValue = src.getPropertyValue(pd.getName());
       if (srcValue == null) {
@@ -27,8 +29,9 @@ public class BaseUpdateDto {
   }
 
   //Null 값 인 property 를 제외하고 복사
-  protected void myCopyProperties(Object input, Object origin) {
-    BeanUtils.copyProperties(input, origin, getNullPropertyNames(input));
+  public void myCopyProperties(Object target) {
+    BeanUtils.copyProperties(this, target, getNullPropertyNames(this));
   }
+
 
 }

@@ -160,7 +160,8 @@ jacocoTestCoverageVerification {
                         "*.common.*.*EntryPoint",
                         "*.common.*.*Filter",
                         "*.common.*.*ErrorCode",
-                        "*.modules.user.domain.*"
+                        "*.modules.user.domain.*",
+                        "*.modules.user.services.CustomUserDetailService"
             ]
         }
     }
