@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import kyoongdev.rolling_bites.modules.user.enums.SocialType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,7 +35,7 @@ public class User {
   private String socialId;
 
   @Column(name = "social_type")
-  private Integer socialType;
+  private SocialType socialType;
 
   @CreatedDate
   @Column(name = "created_at")

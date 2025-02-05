@@ -23,7 +23,7 @@ class UserRepositoryTest {
   void createAndFindUser() {
     SocialType socialType = SocialType.valueOf("KAKAO");
     User user = User.builder().nickname("유저1").socialId("123123")
-        .socialType(socialType.getSocialType()).build();
+        .socialType(socialType).build();
 
     User newUser = userRepository.save(user);
 
@@ -35,7 +35,7 @@ class UserRepositoryTest {
   void findUserBySocialId() {
     SocialType socialType = SocialType.valueOf("KAKAO");
     User newUser = User.builder().nickname("유저1").socialId("123123")
-        .socialType(socialType.getSocialType()).build();
+        .socialType(socialType).build();
 
     userRepository.save(newUser);
 
@@ -53,7 +53,7 @@ class UserRepositoryTest {
 
     SocialType socialType = SocialType.valueOf("KAKAO");
     User newUser = User.builder().nickname("유저1").socialId("123123")
-        .socialType(socialType.getSocialType()).build();
+        .socialType(socialType).build();
 
     userRepository.save(newUser);
 

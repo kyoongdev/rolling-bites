@@ -1,0 +1,46 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+    activate:
+      on-profile: "local"
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  devtools:
+    restart:
+      exclude: build/generated/**, **/querydsl/**
+    livereload:
+      enabled: true
+  jpa:
+    database: mysql
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 10
+
+        show_sql: true
+    generate-ddl: true
+---
+jwt:
+  secret: ${JWT_SECRET}
+  access_token_expires_in: 43200000    # 12시간
+  refresh_token_expires_in: 604800000   # 7일
+---
+multi-thread:
+  thread-count: 15
+
+

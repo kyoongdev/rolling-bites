@@ -17,7 +17,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.util.StopWatch;
 
 
 @RepositoryTest
@@ -40,12 +39,7 @@ class FoodTruckRepositoryTests {
 
   @BeforeAll
   void saveFoodTruck() {
-    StopWatch stopWatch = new StopWatch();
-    stopWatch.start();
     foodTruckBatch.saveAll();
-    stopWatch.stop();
-
-    System.out.println("데이터 생성 시간 : " + stopWatch.getTotalTimeMillis() + "ms");
   }
 
 

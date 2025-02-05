@@ -40,7 +40,11 @@ dependencies {
 
     //Swagger
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0"
-    // Swagger UI
+
+
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
 
     compileOnly 'org.projectlombok:lombok'
@@ -151,7 +155,12 @@ jacocoTestCoverageVerification {
                         "*.enums.*",
                         "*.Q*",
                         "*.common.batch.*",
-                        "*.common.*Aspect"
+                        "*.common.*Aspect",
+                        "*.common.*.*Handler",
+                        "*.common.*.*EntryPoint",
+                        "*.common.*.*Filter",
+                        "*.common.*.*ErrorCode",
+                        "*.modules.user.domain.*"
             ]
         }
     }

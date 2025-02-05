@@ -1,0 +1,6 @@
+jwt:
+
+  secret: ${JWT_SECRET}
+  token:
+    access-expiration-time: 43200000    # 12시간
+    refresh-expiration-time: 604800000   # 7일
