@@ -17,6 +17,7 @@ import kyoongdev.rolling_bites.modules.user.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
@@ -39,6 +40,8 @@ public class AuthFacade {
     socialLogin.getRest(response);
   }
 
+
+  @Transactional
   public void kakaoCallback(String code, HttpServletResponse response) throws IOException {
     SocialLogin socialLogin = socialFactory.getSocialLogin(SocialType.KAKAO);
 
@@ -47,16 +50,20 @@ public class AuthFacade {
 
     Optional<CommonUserDto> isExists = userService.checkCommonUserBySocialId(user.getId());
 
-    TokenDto token = TokenDto.builder().build();
-    if (isExists.isPresent()) {
-      token = jwtProvider.createAccessTokenAndRefreshToken(
-          isExists.get().getId().toString());
-    } else {
-      User newUser = userService.createUser(
-          CreateUserDto.builder().nickname(user.getEmail()).socialType(SocialType.KAKAO)
-              .socialId(user.getId()).build());
-      token = jwtProvider.createAccessTokenAndRefreshToken(newUser.getId().toString());
-    }
+    String userId = isExists.map(CommonUserDto::getId)
+        .map(Object::toString)
+        .orElseGet(() -> {
+          User newUser = userService.createUser(
+              CreateUserDto.builder()
+                  .nickname(user.getEmail())
+                  .socialType(SocialType.KAKAO)
+                  .socialId(user.getId())
+                  .build()
+          );
+          return newUser.getId().toString();
+        });
+
+    TokenDto token = jwtProvider.createAccessTokenAndRefreshToken(userId);
 
     String redirectUri = UriComponentsBuilder.fromUriString(clientUrl + "/auth/kakao/success")
         .replaceQueryParam("accessToken", token.getAccessToken())
