@@ -41,6 +41,7 @@ class KakaoSocialLoginTests {
 
   private MockWebServer mockWebServer;
 
+
   @MockitoBean
   private HttpServletResponse response;
 

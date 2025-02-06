@@ -12,6 +12,7 @@ import kyoongdev.rolling_bites.common.exception.CustomException;
 import kyoongdev.rolling_bites.common.social.SocialErrorCode;
 import kyoongdev.rolling_bites.common.social.SocialLogin;
 import kyoongdev.rolling_bites.modules.user.enums.SocialType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,7 @@ public class KakaoSocialLogin extends SocialLogin {
   private ApiClient apiClient;
 
 
+  @Autowired
   public KakaoSocialLogin(ApiClient apiClient) {
     super(SocialType.KAKAO);
     this.apiClient = apiClient;
