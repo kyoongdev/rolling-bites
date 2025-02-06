@@ -46,7 +46,7 @@ public class KakaoSocialLogin extends SocialLogin {
   @Override
   public void getRest(HttpServletResponse response) throws IOException {
     String url = String.format(
-        oAuthUrl + "?client_id=%s&redirect_uri=%s&response_type=code",
+        oAuthUrl + "/authorize?client_id=%s&redirect_uri=%s&response_type=code",
         clientId,
         redirectUrl);
 
