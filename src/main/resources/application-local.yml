@@ -40,6 +40,8 @@ social:
     clientId: ${KAKAO_CLIENT_ID}
     clientSecret: ${KAKAO_CLIENT_SECRET}
     redirectUrl: ${KAKAO_REDIRECT_URL}
+    oAuthUrl: https://kauth.kakao.com/oauth
+    userUrl: https://kapi.kakao.com/v2/user
   scope:
     - account_email
     - profile_nickname

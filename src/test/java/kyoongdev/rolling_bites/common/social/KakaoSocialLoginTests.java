@@ -1,15 +1,26 @@
 package kyoongdev.rolling_bites.common.social;
 
 
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import kyoongdev.rolling_bites.common.exception.CustomException;
+import kyoongdev.rolling_bites.common.social.kakao.KakaoCallback;
 import kyoongdev.rolling_bites.common.social.kakao.KakaoSocialLogin;
+import kyoongdev.rolling_bites.common.social.kakao.KakaoUser;
+import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -19,7 +30,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @TestPropertySource(properties = {
     "social.kakao.redirectUrl=http://localhost:8080/callback",
     "social.kakao.clientId=kakao-client-id",
-    "social.kakao.clientSecret=kakao-client-secret"
+    "social.kakao.clientSecret=kakao-client-secret",
+    "social.kakao.oAuthUrl=http://localhost:8080",
+    "social.kakao.userUrl=http://localhost:8080"
 })
 class KakaoSocialLoginTests {
 
@@ -40,7 +53,7 @@ class KakaoSocialLoginTests {
   @BeforeEach
   void setUpMockServer() throws IOException {
     mockWebServer = new MockWebServer();
-    mockWebServer.start();
+    mockWebServer.start(8080);
   }
 
   @AfterEach
@@ -48,69 +61,98 @@ class KakaoSocialLoginTests {
     mockWebServer.shutdown();
   }
 
-
   @Test
-  @DisplayName("Kakao OAuth Redirect 테스트")
-  void testGetRest() throws IOException {
-//    mockWebServer.enqueue(
-//        new MockResponse().setStatus("HTTP/1.1 200")
-//            .setBody("{\"access_token\":\"accessToken\""));
-//    String token = kakaoSocialLogin.getToken("code");
-//    System.out.println("token : " + token);
-    Assertions.assertEquals(1, 1);
-//    kakaoSocialLogin.getRest(response);
-//    verify(response).sendRedirect(anyString()); // ✅ 리다이렉트 URL이 호출되었는지 검증
+  @DisplayName("OAuth Redirect URL 생성 및 호출 테스트")
+  void testGetRest() throws Exception {
+
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+
+    kakaoSocialLogin.getRest(response);
+
+    verify(response, times(1)).sendRedirect(anyString());
   }
 
-//  @Test
-//  @DisplayName("카카오 토큰 가져오기 테스트")
-//  void testGetToken() {
-//    String mockToken = "mock_access_token";
-//    when(responseSpec.bodyToMono(Map.class)).thenReturn(
-//        Mono.just(Map.of("access_token", mockToken)));
-//
-//    String token = kakaoSocialLogin.getToken("auth_code");
-//    Assertions.assertEquals(mockToken, token);
-//  }
-//
-//  @Test
-//  @DisplayName("카카오 사용자 정보 가져오기 테스트")
-//  void testGetUser() {
-//    Map<String, Object> kakaoAccount = new HashMap<>();
-//    kakaoAccount.put("email", "test@example.com");
-//
-//    Map<String, Object> responseMap = new HashMap<>();
-//    responseMap.put("id", 123456789);
-//    responseMap.put("kakaoAccount", kakaoAccount);
-//
-//    when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(responseMap));
-//
-//    KakaoUser user = kakaoSocialLogin.getUser("mock_token");
-//    Assertions.assertEquals("123456789", user.getId());
-//    Assertions.assertEquals("test@example.com", user.getEmail());
-//  }
-//
-//  @Test
-//  @DisplayName("카카오 OAuth Callback 테스트")
-//  void testGetRestCallback() {
-//    String mockToken = "mock_access_token";
-//    when(responseSpec.bodyToMono(Map.class)).thenReturn(
-//        Mono.just(Map.of("access_token", mockToken)));
-//
-//    Map<String, Object> kakaoAccount = new HashMap<>();
-//    kakaoAccount.put("email", "test@example.com");
-//
-//    Map<String, Object> responseMap = new HashMap<>();
-//    responseMap.put("id", 123456789);
-//    responseMap.put("kakaoAccount", kakaoAccount);
-//
-//    when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(responseMap));
-//
-//    KakaoCallback callback = kakaoSocialLogin.getRestCallback("auth_code");
-//
-//    Assertions.assertEquals(mockToken, callback.getToken());
-//    Assertions.assertEquals("123456789", callback.getUser().getId());
-//    Assertions.assertEquals("test@example.com", callback.getUser().getEmail());
-//  }
+  @Test
+  @DisplayName("Kakao OAuth 토큰 테스트 - 성공")
+  void testGetTokenSuccess() throws IOException {
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+        .setBody("{\"access_token\": \"mock_access_token\"}")
+        .setResponseCode(200));
+
+    String token = kakaoSocialLogin.getToken("mock_code");
+
+    Assertions.assertEquals(token, "mock_access_token");
+  }
+
+
+  @Test
+  @DisplayName("Kakao OAuth 토큰 테스트 - 실패")
+  void testGetTokenFailure() throws IOException {
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+        .setResponseCode(200));
+
+    Assertions.assertThrows(CustomException.class, () -> {
+      kakaoSocialLogin.getToken("mock_code");
+    }, SocialErrorCode.SOCIAL_INTERNAL_SERVER_ERROR.getMessage());
+  }
+
+
+  @Test
+  @DisplayName("카카오 사용자 정보 가져오기 테스트 - 성공")
+  void testGetUser() {
+    Map<String, Object> kakaoAccount = new HashMap<>();
+    kakaoAccount.put("email", "test@example.com");
+
+    Map<String, Object> responseMap = new HashMap<>();
+    responseMap.put("id", 123456789);
+    responseMap.put("kakaoAccount", kakaoAccount);
+
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+        .setBody("{\"id\":123456789,\"kakaoAccount\":{\"email\":\"test@example.com\"}}")
+        .setResponseCode(200));
+
+    KakaoUser user = kakaoSocialLogin.getUser("mock_token");
+    Assertions.assertEquals("123456789", user.getId());
+    Assertions.assertEquals("test@example.com", user.getEmail());
+  }
+
+  @Test
+  @DisplayName("카카오 사용자 정보 가져오기 테스트 - 실패")
+  void testGetUserFailure() {
+
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+
+        .setResponseCode(200));
+
+    Assertions.assertThrows(CustomException.class, () -> {
+      kakaoSocialLogin.getUser("mock_token");
+    }, SocialErrorCode.SOCIAL_INTERNAL_SERVER_ERROR.getMessage());
+
+  }
+
+  //
+  @Test
+  @DisplayName("카카오 OAuth Callback 테스트")
+  void testGetRestCallback() {
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+        .setBody("{\"access_token\": \"mock_access_token\"}")
+        .setResponseCode(200));
+
+    mockWebServer.enqueue(new MockResponse()
+        .addHeader("Content-Type", "application/json")
+        .setBody("{\"id\":123456789,\"kakaoAccount\":{\"email\":\"test@example.com\"}}")
+        .setResponseCode(200));
+
+    KakaoCallback callback = kakaoSocialLogin.getRestCallback("auth_code");
+
+    Assertions.assertEquals("mock_access_token", callback.getToken());
+    Assertions.assertEquals("123456789", callback.getUser().getId());
+    Assertions.assertEquals("test@example.com", callback.getUser().getEmail());
+  }
 
 }

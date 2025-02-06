@@ -43,7 +43,7 @@ class UserRepositoryTest {
 
     Assertions.assertTrue(user.isPresent());
     Assertions.assertEquals("123123", user.get().getSocialId());
-    Assertions.assertEquals(user.get().getSocialType(), SocialType.KAKAO.getSocialType());
+    Assertions.assertEquals(user.get().getSocialType(), SocialType.KAKAO);
   }
 
 

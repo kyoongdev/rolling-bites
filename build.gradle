@@ -159,6 +159,7 @@ jacocoTestCoverageVerification {
                         "*.enums.*",
                         "*.Q*",
                         "*.common.batch.*",
+                        "*.common.apiClient.*",
                         "*.common.*Aspect",
                         "*.common.*.*Handler",
                         "*.common.*.*EntryPoint",

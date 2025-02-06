@@ -3,16 +3,17 @@ package kyoongdev.rolling_bites.common.social.kakao;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import kyoongdev.rolling_bites.common.apiClient.ApiClient;
 import kyoongdev.rolling_bites.common.exception.CustomException;
 import kyoongdev.rolling_bites.common.social.SocialErrorCode;
 import kyoongdev.rolling_bites.common.social.SocialLogin;
 import kyoongdev.rolling_bites.modules.user.enums.SocialType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 
 @Component
@@ -27,15 +28,25 @@ public class KakaoSocialLogin extends SocialLogin {
   @Value("${social.kakao.clientSecret}")
   private String clientSecret;
 
-  public KakaoSocialLogin() {
+  @Value("${social.kakao.oAuthUrl}")
+  private String oAuthUrl;
+  @Value("${social.kakao.userUrl}")
+  private String userUrl;
+
+
+  private ApiClient apiClient;
+
+
+  public KakaoSocialLogin(ApiClient apiClient) {
     super(SocialType.KAKAO);
+    this.apiClient = apiClient;
   }
 
 
   @Override
   public void getRest(HttpServletResponse response) throws IOException {
     String url = String.format(
-        "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code",
+        oAuthUrl + "?client_id=%s&redirect_uri=%s&response_type=code",
         clientId,
         redirectUrl);
 
@@ -44,14 +55,15 @@ public class KakaoSocialLogin extends SocialLogin {
 
   @Override
   public String getToken(String code) {
-    WebClient webClient = WebClient.builder().baseUrl("https://kauth.kakao.com/oauth/token")
-        .build();
 
-    Map response = webClient.get().uri(
-            uriBuilder -> uriBuilder.path("").queryParam("grant_type", "authorization_code")
-                .queryParam("client_id", clientId).queryParam("client_secret", clientSecret)
-                .queryParam("redirectUri", redirectUrl).queryParam("code", code).build()).retrieve()
-        .bodyToMono(Map.class).block();
+    Map<String, String> queryParams = new HashMap<>();
+
+    queryParams.put("client_id", clientId);
+    queryParams.put("redirectUri", redirectUrl);
+    queryParams.put("grant_type", "authorization_code");
+    queryParams.put("code", code);
+
+    Map response = apiClient.get(oAuthUrl + "/token", queryParams);
 
     if (Objects.isNull(response)) {
       throw new CustomException(SocialErrorCode.SOCIAL_INTERNAL_SERVER_ERROR);
@@ -62,13 +74,13 @@ public class KakaoSocialLogin extends SocialLogin {
 
   @Override
   public <SocialUser> SocialUser getUser(String token) {
-    WebClient webClient = WebClient.builder().baseUrl("https://kapi.kakao.com/v2/user/me")
-        .defaultHeaders(headers -> {
-          headers.setBearerAuth(token);
-          headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-        }).build();
 
-    Map response = webClient.get().retrieve().bodyToMono(Map.class).block();
+    Map<String, String> headers = new HashMap<>();
+
+    headers.put("Authorization", "Bearer " + token);
+    headers.put("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+    Map response = apiClient.get(userUrl + "/me", null, headers);
 
     if (Objects.isNull(response)) {
       throw new CustomException(SocialErrorCode.SOCIAL_INTERNAL_SERVER_ERROR);
