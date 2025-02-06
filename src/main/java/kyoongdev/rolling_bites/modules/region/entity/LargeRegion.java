@@ -34,6 +34,6 @@ public class LargeRegion {
   private String name;
 
   @OneToMany(mappedBy = "largeRegion", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  private final List<SmallRegion> smallRegions = new ArrayList<>();
+  private List<SmallRegion> smallRegions = new ArrayList<>();
 
 }
