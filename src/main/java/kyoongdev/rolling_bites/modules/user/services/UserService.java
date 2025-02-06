@@ -28,6 +28,30 @@ public class UserService {
 
   }
 
+  public Optional<CommonUserDto> checkCommonUserById(Integer id) {
+    Optional<User> user = userRepository.findById(id.longValue());
+
+    if (user.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.ofNullable(CommonUserDto.builder().id(user.get().getId().intValue())
+        .nickname(user.get().getNickname())
+        .socialId(user.get().getSocialId()).socialType(user.get().getSocialType()).build());
+  }
+
+  public Optional<CommonUserDto> checkCommonUserBySocialId(String socialId) {
+    Optional<User> user = userRepository.findBySocialId(socialId);
+
+    if (user.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.ofNullable(CommonUserDto.builder().id(user.get().getId().intValue())
+        .nickname(user.get().getNickname())
+        .socialId(user.get().getSocialId()).socialType(user.get().getSocialType()).build());
+  }
+
   @Transactional
   public User createUser(CreateUserDto data) {
 
