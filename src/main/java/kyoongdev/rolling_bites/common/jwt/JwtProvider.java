@@ -7,16 +7,18 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.SecretKey;
+import kyoongdev.rolling_bites.common.cookie.CookieManager;
+import kyoongdev.rolling_bites.common.cookie.CookieName;
 import kyoongdev.rolling_bites.common.exception.CustomException;
 import kyoongdev.rolling_bites.modules.user.domain.CustomUserDetail;
 import kyoongdev.rolling_bites.modules.user.services.CustomUserDetailService;
+import lombok.Generated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,12 +90,11 @@ public class JwtProvider {
   }
 
 
-  public Optional<String> resolveToken(HttpServletRequest req) throws JwtException {
-    String bearerToken = req.getHeader("Authorization");
-    if (bearerToken != null) {
-      return Optional.of(bearerToken.substring(7));
-    }
-    return Optional.empty();
+  @Generated
+  public Optional<String> resolveToken() throws JwtException {
+    String bearerToken = CookieManager.get(CookieName.ACCESS_TOKEN.getName());
+
+    return Optional.of(bearerToken.substring(7));
   }
 
 

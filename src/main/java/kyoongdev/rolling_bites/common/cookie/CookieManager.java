@@ -28,7 +28,7 @@ public class CookieManager {
     getResponse().addCookie(cookie);
   }
 
-  public static String get(String key) throws Exception {
+  public static String get(String key) {
     Cookie cookie = getCookie(key);
 
     if (cookie == null) {

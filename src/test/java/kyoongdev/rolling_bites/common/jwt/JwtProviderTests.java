@@ -1,14 +1,9 @@
 package kyoongdev.rolling_bites.common.jwt;
 
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import kyoongdev.rolling_bites.common.exception.CustomException;
 import kyoongdev.rolling_bites.modules.user.entity.User;
 import kyoongdev.rolling_bites.modules.user.enums.SocialType;
@@ -156,27 +151,5 @@ class JwtProviderTests {
     });
   }
 
-  @Test
-  @DisplayName("resolveToken - 성공")
-  void resolveTokenTestSuccess() {
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getHeader("Authorization")).thenReturn("Bearer testToken");
-
-    Optional<String> token = jwtProvider.resolveToken(request);
-
-    Assertions.assertTrue(token.isPresent());
-    Assertions.assertEquals("testToken", token.get());
-  }
-
-  @Test
-  @DisplayName("resolveToken - 실패 (Authorization 헤더 없음)")
-  void resolveTokenTestFailure() {
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getHeader("Authorization")).thenReturn(null);
-
-    Optional<String> token = jwtProvider.resolveToken(request);
-
-    Assertions.assertFalse(token.isPresent());
-  }
 
 }

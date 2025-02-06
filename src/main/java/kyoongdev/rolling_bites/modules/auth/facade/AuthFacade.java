@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 import kyoongdev.rolling_bites.common.cookie.CookieManager;
+import kyoongdev.rolling_bites.common.cookie.CookieName;
 import kyoongdev.rolling_bites.common.jwt.JwtProvider;
 import kyoongdev.rolling_bites.common.jwt.TokenDto;
 import kyoongdev.rolling_bites.common.social.SocialFactory;
@@ -71,7 +72,10 @@ public class AuthFacade {
         .replaceQueryParam("refreshToken", token.getRefreshToken())
         .build().toUriString();
 
-    CookieManager.put("accessToken_12312", token.getAccessToken(), 100000, false);
+    CookieManager.put(CookieName.ACCESS_TOKEN.getName(), token.getAccessToken(),
+        CookieName.ACCESS_TOKEN.getAge(), false);
+    CookieManager.put(CookieName.REFRESH_TOKEN.getName(), token.getRefreshToken(),
+        CookieName.REFRESH_TOKEN.getAge(), false);
 
     response.sendRedirect(redirectUri);
   }
