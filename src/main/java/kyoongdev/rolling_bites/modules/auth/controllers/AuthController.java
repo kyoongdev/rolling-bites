@@ -23,7 +23,7 @@ public class AuthController {
   @GetMapping("social/kakao/callback")
   @Generated
   public void kakaoCallback(@RequestParam("code") String code, HttpServletResponse response)
-      throws IOException {
+      throws Exception {
     authFacade.kakaoCallback(code, response);
 
 

@@ -3,6 +3,7 @@ package kyoongdev.rolling_bites.modules.auth.facade;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import kyoongdev.rolling_bites.common.cookie.CookieManager;
 import kyoongdev.rolling_bites.common.jwt.JwtProvider;
 import kyoongdev.rolling_bites.common.jwt.TokenDto;
 import kyoongdev.rolling_bites.common.social.SocialFactory;
@@ -42,7 +43,7 @@ public class AuthFacade {
 
 
   @Transactional
-  public void kakaoCallback(String code, HttpServletResponse response) throws IOException {
+  public void kakaoCallback(String code, HttpServletResponse response) throws Exception {
     SocialLogin socialLogin = socialFactory.getSocialLogin(SocialType.KAKAO);
 
     KakaoCallback kakakoCallback = socialLogin.getRestCallback(code);
@@ -69,6 +70,8 @@ public class AuthFacade {
         .replaceQueryParam("accessToken", token.getAccessToken())
         .replaceQueryParam("refreshToken", token.getRefreshToken())
         .build().toUriString();
+
+    CookieManager.put("accessToken_12312", token.getAccessToken(), 100000, false);
 
     response.sendRedirect(redirectUri);
   }

@@ -77,7 +77,7 @@ public class AuthFacadeTests {
   @Test
   @DisplayName("카카오 로그인 콜백 - 새로운 유저 생성")
   @Transactional
-  void kakaoLoginCallbackTestWithNewUser() throws IOException {
+  void kakaoLoginCallbackTestWithNewUser() throws Exception {
 
     mockWebServer.enqueue(new MockResponse()
         .addHeader("Content-Type", "application/json")
@@ -116,7 +116,7 @@ public class AuthFacadeTests {
   @Test
   @DisplayName("카카오 로그인 콜백 - 기존 유저")
   @Transactional
-  void kakaoLoginCallbackTestWithExistingUser() throws IOException {
+  void kakaoLoginCallbackTestWithExistingUser() throws Exception {
 
     mockWebServer.enqueue(new MockResponse()
         .addHeader("Content-Type", "application/json")
